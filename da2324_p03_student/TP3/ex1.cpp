@@ -8,9 +8,9 @@ bool findAugmentingPath(Graph<T> *g, Vertex<T> *s, Vertex<T> *t) {
     for (Vertex<T> *v: g->getVertexSet())
         v->setVisited(false);
 
+    s->setVisited(true);
     std::queue<Vertex<T> *> q;
     q.push(s);
-    s->setVisited(true);
 
     while (!q.empty() && !t->isVisited()) {
         Vertex<T> *v = q.front();
@@ -21,14 +21,16 @@ bool findAugmentingPath(Graph<T> *g, Vertex<T> *s, Vertex<T> *t) {
             if (!w->isVisited() && e->getWeight() - e->getFlow() > 0) {
                 w->setVisited(true);
                 w->setPath(e); // Set forward edge as path
-                q.push(e->getDest());
+                q.push(w);
             }
+        }
 
-            Edge<T> *reverseEdge = e->getReverse();
-            if (reverseEdge != nullptr && !reverseEdge->getOrig()->isVisited() && reverseEdge->getFlow() > 0) {
-                reverseEdge->getOrig()->setVisited(true);
-                reverseEdge->getOrig()->setPath(reverseEdge); // Set reverse edge as path
-                q.push(reverseEdge->getOrig());
+        for (Edge<T> *e: v->getIncoming()) {
+            Vertex<T> *w = e->getOrig();
+            if (!w->isVisited() && e->getFlow() > 0) {
+                w->setVisited(true);
+                w->setPath(e); // Set reverse edge as path
+                q.push(w);
             }
         }
     }
@@ -38,32 +40,35 @@ bool findAugmentingPath(Graph<T> *g, Vertex<T> *s, Vertex<T> *t) {
 
 template<class T>
 double findBottleNeckAlongPath(Vertex<T> *s, Vertex<T> *t) {
-    Edge<T> *e = t->getPath();
     double bottleneck = INF;
 
-    while (e->getOrig() != s) {
-        if (e->getWeight() - e->getFlow() < bottleneck)
-            bottleneck = e->getWeight() - e->getFlow();
-        e = e->getOrig()->getPath();
+    for (Vertex<T> *v = t; v != s;) {
+        Edge<T> *e = v->getPath();
+        if (e->getDest() == v) {
+            bottleneck = std::min(bottleneck, e->getWeight() - e->getFlow());
+            v = e->getOrig();
+        } else {
+            bottleneck = std::min(bottleneck, e->getFlow());
+            v = e->getDest();
+        }
     }
+
     return bottleneck;
 }
 
 template<class T>
 void augmentFlowAlongPath(Vertex<T> *s, Vertex<T> *t, const double &bottleNeck) {
-    Edge<T> *e = t->getPath();
-
-    while (e->getOrig() != s) {
-        if (e->getReverse() != nullptr) {
-            e->getReverse()->setFlow(e->getReverse()->getFlow() - bottleNeck);
+    for (Vertex<T> *v = t; v != s;) {
+        Edge<T> *e = v->getPath();
+        double flow = e->getFlow();
+        if (e->getDest() == v) {
+            e->setFlow(flow + bottleNeck);
+            v = e->getOrig();
         } else {
-            e->setFlow(e->getFlow() + bottleNeck);
+            e->setFlow(flow - bottleNeck);
+            v = e->getDest();
         }
-
-        e = e->getOrig()->getPath();
     }
-
-    e->setFlow(e->getFlow() + bottleNeck);
 }
 
 template<class T>
@@ -72,7 +77,7 @@ void edmondsKarp(Graph<T> *g, int source, int target) {
     Vertex<T> *t = g->findVertex(target);
 
     if (s == nullptr || t == nullptr || s == t)
-        return;
+        throw std::logic_error("Invalid source and/or target vertex");
 
     for (Vertex<T> *v: g->getVertexSet()) {
         v->setPath(nullptr);
