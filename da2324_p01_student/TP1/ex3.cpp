@@ -6,12 +6,24 @@ using namespace std;
 // Helper function to reverse the edges of a directed graph
 template<typename T>
 void aux_reverseGraphEdges(Graph<T> *g) {
-    for (const Vertex<T> *v: g->getVertexSet()) {
-        for (const Edge<T> &e: v->getAdj()) {
-            Vertex<T> *w = e.getDest();
-            g->removeEdge(v->getInfo(), w->getInfo());
-            g->addEdge(w->getInfo(), v->getInfo(), e.getWeight());
+    stack<int> edge_stack;
+    for (auto v: g->getVertexSet()) {
+        for (auto &e: v->getAdj()) {
+            auto w = e.getDest();
+            edge_stack.push(w->getInfo());
+            edge_stack.push(v->getInfo());
         }
+    }
+
+    while (!edge_stack.empty()) {
+        int src;
+        int dst;
+        dst = edge_stack.top();
+        edge_stack.pop();
+        src = edge_stack.top();
+        edge_stack.pop();
+        g->removeEdge(dst, src);
+        g->addEdge(src, dst, 0);
     }
 }
 
