@@ -2,9 +2,36 @@
 
 #include "exercises.h"
 
-unsigned int knapsackBT(unsigned int values[], unsigned int weights[], unsigned int n, unsigned int maxWeight, bool usedItems[]) {
-    //TODO
-    return 0;
+void
+knapsackRec(unsigned int values[], unsigned int weights[], unsigned int n, unsigned int currI, unsigned int maxWeight,
+            unsigned int currValue, bool currItems[], unsigned int &maxValue, bool usedItems[]) {
+    if (currI == n) {
+        if (currValue > maxValue) {
+            maxValue = currValue;
+            for (unsigned int i = 0; i < n; i++)
+                usedItems[i] = currItems[i];
+        }
+    } else {
+        if (maxWeight >= weights[currI]) {
+            currItems[currI] = true;
+            knapsackRec(values, weights, n, currI + 1, maxWeight - weights[currI], currValue + values[currI], currItems,
+                        maxValue, usedItems);
+            currItems[currI] = false;
+        }
+        knapsackRec(values, weights, n, currI + 1, maxWeight, currValue, currItems, maxValue, usedItems);
+    }
+}
+
+unsigned int
+knapsackBT(unsigned int values[], unsigned int weights[], unsigned int n, unsigned int maxWeight, bool usedItems[]) {
+    unsigned int maxValue = 0;
+    bool currItems[10000];
+    for (unsigned int i = 0; i < n; i++)
+        currItems[i] = false;
+
+    knapsackRec(values, weights, n, 0, maxWeight, 0, currItems, maxValue, usedItems);
+
+    return maxValue;
 }
 
 /// TESTS ///
