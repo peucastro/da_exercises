@@ -1,4 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/x64/ninja -DCMAKE_TOOLCHAIN_FILE=/Users/vitorsousa/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake -G Ninja -S /Users/vitorsousa/CLionProjects/da2324_pLP_student -B /Users/vitorsousa/CLionProjects/da2324_pLP_student/cmake-build-debug
--- Configuring done (0.9s)
--- Generating done (0.1s)
--- Build files have been written to: /Users/vitorsousa/CLionProjects/da2324_pLP_student/cmake-build-debug
